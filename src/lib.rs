@@ -1,14 +1,28 @@
-use mysql_async::{params, Conn, Params, Value};
+use mysql_async::{params, Conn, Params};
 use mysql_async::prelude::Queryable;
 use mysql_async::prelude::FromValue;
 
 const URL: &str = "mysql://justus:@localhost:3306/olmmcc";
 
-pub fn from_value<T: FromValue>(value: Value) -> T {
+pub struct Value {
+    value: Option<mysql_async::Value>
+}
+impl Value {
+    pub fn from(value: mysql_async::Value) -> Self {
+        Value {
+            value: Some(value)
+        }
+    }
+    pub fn get(&mut self) -> mysql_async::Value {
+        self.value.take().unwrap()
+    }
+}
+
+pub fn from_value<T: FromValue>(value: mysql_async::Value) -> T {
     mysql_async::from_value(value)
 }
 
-pub async fn get_like(table: &str, column_name: &str, column_value: &str) -> Vec<Vec<Value>> {
+pub async fn get_like(table: &str, column_name: &str, column_value: &str) -> Vec<Vec<mysql_async::Value>> {
     let checked_table = check_table(table).unwrap();
     let query = format!(
             "SELECT * FROM {} WHERE {} LIKE :value",
@@ -21,13 +35,13 @@ pub async fn get_like(table: &str, column_name: &str, column_value: &str) -> Vec
     .unwrap()
 }
 
-pub async fn get_some(table: &str, values: &str) -> Vec<Vec<Value>> {
+pub async fn get_some(table: &str, values: &str) -> Vec<Vec<mysql_async::Value>> {
     let checked_table = check_table(table).unwrap();
     let query = format!("SELECT ({}) FROM {}", values, checked_table);
     mysql_statement(query, ()).await.unwrap()
 }
 
-pub async fn get_all_rows(table: &str, order: bool) -> Vec<Vec<Value>> {
+pub async fn get_all_rows(table: &str, order: bool) -> Vec<Vec<mysql_async::Value>> {
     let checked_table = check_table(table).unwrap();
     let order = if order { " ORDER BY id" } else { "" };
     let query = format!("SELECT * FROM {}{}", checked_table, order);
@@ -44,7 +58,7 @@ fn check_table(table: &str) -> Option<&str> {
     None
 }
 
-pub async fn get_column_details(table: &str) -> Vec<Vec<Value>> {
+pub async fn get_column_details(table: &str) -> Vec<Vec<mysql_async::Value>> {
     let checked_table = check_table(table).unwrap();
     let query = format!("SHOW COLUMNS FROM {}", checked_table);
     mysql_statement(query, ()).await.unwrap()
@@ -53,7 +67,7 @@ pub async fn get_column_details(table: &str) -> Vec<Vec<Value>> {
 pub async fn mysql_statement<T: Into<Params>>(
     request: String,
     params: T,
-) -> Result<Vec<Vec<Value>>, String> {
+) -> Result<Vec<Vec<mysql_async::Value>>, String> {
     let conn = Conn::new(URL).await.unwrap();
     let result = conn.prep_exec(request, params).await;
     match result {
