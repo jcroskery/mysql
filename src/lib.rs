@@ -4,12 +4,12 @@ use mysql_async::prelude::FromValue;
 
 const URL: &str = "mysql://justus:@localhost:3306/olmmcc";
 
-pub struct Value {
+pub struct MyValue {
     value: Option<mysql_async::Value>
 }
-impl Value {
+impl MyValue {
     pub fn from(value: mysql_async::Value) -> Self {
-        Value {
+        MyValue {
             value: Some(value)
         }
     }
