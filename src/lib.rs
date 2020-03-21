@@ -13,6 +13,11 @@ impl MyValue {
             value: Some(value)
         }
     }
+    pub fn null() -> Self {
+        MyValue {
+            value: Some(mysql_async::Value::NULL)
+        }
+    }
     pub fn get(&mut self) -> mysql_async::Value {
         self.value.take().unwrap()
     }
