@@ -118,11 +118,3 @@ pub async fn delete_row_where(table: &str, where_name: &str, wherevalue: &str) {
     ).await
     .unwrap();
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
