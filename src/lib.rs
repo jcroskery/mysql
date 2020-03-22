@@ -1,17 +1,15 @@
-use mysql_async::{params, Conn, Params};
-use mysql_async::prelude::Queryable;
 use mysql_async::prelude::FromValue;
+use mysql_async::prelude::Queryable;
+use mysql_async::{params, Conn, Params};
 
 const URL: &str = "mysql://justus:@localhost:3306/olmmcc";
 
 pub struct MyValue {
-    value: Option<mysql_async::Value>
+    value: Option<mysql_async::Value>,
 }
 impl MyValue {
     pub fn from(value: mysql_async::Value) -> Self {
-        MyValue {
-            value: Some(value)
-        }
+        MyValue { value: Some(value) }
     }
     pub fn get(&mut self) -> mysql_async::Value {
         self.value.take().unwrap()
@@ -22,22 +20,24 @@ pub fn from_value<T: FromValue>(value: mysql_async::Value) -> T {
     mysql_async::from_value(value)
 }
 
-pub async fn get_like(table: &str, column_name: &str, column_value: &str) -> Vec<Vec<mysql_async::Value>> {
+pub async fn get_like(
+    table: &str,
+    column_name: &str,
+    column_value: &str,
+) -> Vec<Vec<mysql_async::Value>> {
     let checked_table = check_table(table).unwrap();
     let query = format!(
-            "SELECT * FROM {} WHERE {} LIKE :value",
-            checked_table, column_name
-        );
-    mysql_statement(
-        query,
-        params!("value" => column_value),
-    ).await
-    .unwrap()
+        "SELECT * FROM {} WHERE {} LIKE :value",
+        checked_table, column_name
+    );
+    mysql_statement(query, params!("value" => column_value))
+        .await
+        .unwrap()
 }
 
 pub async fn get_some(table: &str, values: &str) -> Vec<Vec<mysql_async::Value>> {
     let checked_table = check_table(table).unwrap();
-    let query = format!("SELECT ({}) FROM {}", values, checked_table);
+    let query = format!("SELECT {} FROM {}", values, checked_table);
     mysql_statement(query, ()).await.unwrap()
 }
 
@@ -89,19 +89,22 @@ pub async fn row_exists(table: &str, column_name: &str, column_value: &str) -> b
 pub async fn insert_row(table: &str, titles: Vec<&str>, contents: Vec<&str>) -> Result<(), String> {
     let checked_table = check_table(table).unwrap();
     let query = format!(
-            "INSERT INTO {} ({}) VALUES ({}?)",
-            checked_table,
-            titles.join(", "),
-            "?,".to_string().repeat(titles.len() - 1)
-        );
-    mysql_statement(
-        query,
-        Params::from(contents),
-    ).await?;
+        "INSERT INTO {} ({}) VALUES ({}?)",
+        checked_table,
+        titles.join(", "),
+        "?,".to_string().repeat(titles.len() - 1)
+    );
+    mysql_statement(query, Params::from(contents)).await?;
     Ok(())
 }
 
-pub async fn change_row_where(table: &str, where_name: &str, wherevalue: &str, name: &str, value: &str) {
+pub async fn change_row_where(
+    table: &str,
+    where_name: &str,
+    wherevalue: &str,
+    name: &str,
+    value: &str,
+) {
     let checked_table = check_table(table).unwrap();
     mysql_statement(
         format!(
@@ -109,16 +112,27 @@ pub async fn change_row_where(table: &str, where_name: &str, wherevalue: &str, n
             checked_table, name, where_name
         ),
         params!(value, wherevalue),
-    ).await
+    )
+    .await
     .unwrap();
 }
 
 pub async fn get_max_id(table: &str) -> i32 {
-    from_value(mysql_statement(format!("SELECT MAX(id) FROM {}", table), ()).await.unwrap()[0][0].clone())
+    from_value(
+        mysql_statement(format!("SELECT MAX(id) FROM {}", table), ())
+            .await
+            .unwrap()[0][0]
+            .clone(),
+    )
 }
 
 pub async fn get_min_id(table: &str) -> i32 {
-    from_value(mysql_statement(format!("SELECT MIN(id) FROM {}", table), ()).await.unwrap()[0][0].clone())
+    from_value(
+        mysql_statement(format!("SELECT MIN(id) FROM {}", table), ())
+            .await
+            .unwrap()[0][0]
+            .clone(),
+    )
 }
 
 pub async fn delete_row_where(table: &str, where_name: &str, wherevalue: &str) {
@@ -129,6 +143,7 @@ pub async fn delete_row_where(table: &str, where_name: &str, wherevalue: &str) {
             checked_table, where_name
         ),
         params!(wherevalue),
-    ).await
+    )
+    .await
     .unwrap();
 }
