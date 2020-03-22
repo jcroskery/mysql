@@ -41,6 +41,22 @@ pub async fn get_some(table: &str, values: &str) -> Vec<Vec<mysql_async::Value>>
     mysql_statement(query, ()).await.unwrap()
 }
 
+pub async fn get_some_like(
+    table: &str,
+    values: &str,
+    column_name: &str,
+    column_value: &str,
+) -> Vec<Vec<mysql_async::Value>> {
+    let checked_table = check_table(table).unwrap();
+    let query = format!(
+        "SELECT {} FROM {} WHERE {} LIKE :value",
+        values, checked_table, column_name
+    );
+    mysql_statement(query, params!("value" => column_value))
+        .await
+        .unwrap()
+}
+
 pub async fn get_all_rows(table: &str, order: bool) -> Vec<Vec<mysql_async::Value>> {
     let checked_table = check_table(table).unwrap();
     let order = if order { " ORDER BY id" } else { "" };
