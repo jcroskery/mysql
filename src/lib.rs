@@ -65,7 +65,7 @@ pub async fn get_all_rows(table: &str, order: bool) -> Vec<Vec<mysql_async::Valu
 }
 
 fn check_table(table: &str) -> Option<&str> {
-    const ALLOWED_TABLES: &[&str] = &["admin", "pages", "articles", "calendar", "songs", "users"];
+    const ALLOWED_TABLES: &[&str] = &["admin", "pages", "articles", "calendar", "songs", "users", "game_users", "games"];
     for allowed_table in ALLOWED_TABLES {
         if *allowed_table == table {
             return Some(allowed_table);
