@@ -110,7 +110,15 @@ pub async fn insert_row(table: &str, titles: Vec<&str>, contents: Vec<&str>) -> 
         titles.join(", "),
         "?,".to_string().repeat(titles.len() - 1)
     );
-    mysql_statement(query, Params::from(contents)).await?;
+    let mut values = vec!();
+    for content in contents {
+        if content == "" {
+            values.push(mysql_async::Value::NULL);
+        } else {
+            values.push(mysql_async::Value::from(content));
+        }
+    }
+    mysql_statement(query, values).await?;
     Ok(())
 }
 
