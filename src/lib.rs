@@ -4,6 +4,8 @@ use mysql_async::{params, Conn, Params};
 
 const URL: &str = "mysql://justus:@localhost:3306/olmmcc";
 
+pub const NULL: mysql_async::Value = mysql_async::Value::NULL;
+
 pub struct MyValue {
     value: Option<mysql_async::Value>,
 }
