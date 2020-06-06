@@ -1,4 +1,5 @@
 use mysql_async::prelude::FromValue;
+use mysql_async::prelude::ToValue;
 use mysql_async::prelude::Queryable;
 use mysql_async::{params, Conn, Params};
 
@@ -20,8 +21,12 @@ impl MyValue {
     }
 }
 
-pub fn try_from_value<T: From<mysql_async::Value>>(value: mysql_async::Value) -> Option<T> {
-    mysql_async::Value::try_into(value).ok()
+pub fn try_from_value<T: FromValue>(value: mysql_async::Value) -> Option<T> {
+    if value != NULL {
+        Some(mysql_async::from_value(value))
+    } else {
+        None
+    }
 }
 
 pub fn from_value<T: FromValue>(value: mysql_async::Value) -> T {
