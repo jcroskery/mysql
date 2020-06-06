@@ -38,17 +38,12 @@ pub async fn get_like(
     column_name: &str,
     column_value: &str,
 ) -> Vec<Vec<mysql_async::Value>> {
-    let value = if column_value == "" {
-        mysql_async::Value::NULL
-    } else {
-        mysql_async::Value::from(column_value)
-    };
     let checked_table = check_table(table).unwrap();
     let query = format!(
         "SELECT * FROM {} WHERE {} LIKE :value",
         checked_table, column_name
     );
-    mysql_statement(query, params!("value" => value))
+    mysql_statement(query, params!("value" => column_value))
         .await
         .unwrap()
 }
@@ -65,12 +60,17 @@ pub async fn get_some_like(
     column_name: &str,
     column_value: &str,
 ) -> Vec<Vec<mysql_async::Value>> {
+    let value = if column_value == "" {
+        mysql_async::Value::NULL
+    } else {
+        mysql_async::Value::from(column_value)
+    };
     let checked_table = check_table(table).unwrap();
     let query = format!(
         "SELECT {} FROM {} WHERE {} LIKE :value",
         values, checked_table, column_name
     );
-    mysql_statement(query, params!("value" => column_value))
+    mysql_statement(query, params!("value" => value))
         .await
         .unwrap()
 }
