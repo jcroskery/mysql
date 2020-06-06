@@ -1,6 +1,6 @@
 use mysql_async::prelude::FromValue;
-use mysql_async::prelude::ToValue;
 use mysql_async::prelude::Queryable;
+use mysql_async::prelude::ToValue;
 use mysql_async::{params, Conn, Params};
 
 use std::convert::TryInto;
@@ -60,20 +60,27 @@ pub async fn get_some_like(
     column_name: &str,
     column_value: &str,
 ) -> Vec<Vec<mysql_async::Value>> {
-    let value = if column_value == "" {
-        println!("hi");
-        mysql_async::Value::NULL
-    } else {
-        mysql_async::Value::from(column_value)
-    };
     let checked_table = check_table(table).unwrap();
     let query = format!(
         "SELECT {} FROM {} WHERE {} LIKE :value",
         values, checked_table, column_name
     );
-    mysql_statement(query, params!("value" => value))
+    mysql_statement(query, params!("value" => column_value))
         .await
         .unwrap()
+}
+
+pub async fn get_some_like_null(
+    table: &str,
+    values: &str,
+    column_name: &str,
+) -> Vec<Vec<mysql_async::Value>> {
+    let checked_table = check_table(table).unwrap();
+    let query = format!(
+        "SELECT {} FROM {} WHERE {} IS NULL",
+        values, checked_table, column_name
+    );
+    mysql_statement(query, ()).await.unwrap()
 }
 
 pub async fn get_all_rows(table: &str, order: bool) -> Vec<Vec<mysql_async::Value>> {
@@ -84,7 +91,16 @@ pub async fn get_all_rows(table: &str, order: bool) -> Vec<Vec<mysql_async::Valu
 }
 
 fn check_table(table: &str) -> Option<&str> {
-    const ALLOWED_TABLES: &[&str] = &["admin", "pages", "articles", "calendar", "songs", "users", "game_users", "games"];
+    const ALLOWED_TABLES: &[&str] = &[
+        "admin",
+        "pages",
+        "articles",
+        "calendar",
+        "songs",
+        "users",
+        "game_users",
+        "games",
+    ];
     for allowed_table in ALLOWED_TABLES {
         if *allowed_table == table {
             return Some(allowed_table);
@@ -129,7 +145,7 @@ pub async fn insert_row(table: &str, titles: Vec<&str>, contents: Vec<&str>) -> 
         titles.join(", "),
         "?,".to_string().repeat(titles.len() - 1)
     );
-    let mut values = vec!();
+    let mut values = vec![];
     for content in contents {
         if content == "" {
             values.push(mysql_async::Value::NULL);
