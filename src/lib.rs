@@ -2,6 +2,8 @@ use mysql_async::prelude::FromValue;
 use mysql_async::prelude::Queryable;
 use mysql_async::{params, Conn, Params};
 
+use std::convert::TryInto;
+
 const URL: &str = "mysql://justus:@localhost:3306/olmmcc";
 
 pub const NULL: mysql_async::Value = mysql_async::Value::NULL;
@@ -16,6 +18,10 @@ impl MyValue {
     pub fn get(&mut self) -> mysql_async::Value {
         self.value.take().unwrap()
     }
+}
+
+pub fn try_from_value<T: From<mysql_async::Value>>(value: mysql_async::Value) -> Option<T> {
+    mysql_async::Value::try_into(value).ok()
 }
 
 pub fn from_value<T: FromValue>(value: mysql_async::Value) -> T {
