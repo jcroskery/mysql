@@ -61,6 +61,7 @@ pub async fn get_some_like(
     column_value: &str,
 ) -> Vec<Vec<mysql_async::Value>> {
     let value = if column_value == "" {
+        println!("hi");
         mysql_async::Value::NULL
     } else {
         mysql_async::Value::from(column_value)
